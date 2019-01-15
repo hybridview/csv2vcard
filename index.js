@@ -26,44 +26,59 @@ function getEntries(entry, cols) {
 
 fs.mkdir(outputDir, function() {
   fs.readFile(file, 'utf8', function(err, output) {
-    parse(output, function(err, parsedCSV){
-      var header = parsedCSV.shift();
-      var firstNameCol = header.findIndex(v => v.toLowerCase() === 'first name');
-      var middleNameCol = header.findIndex(v => v.toLowerCase() === 'middle name');
-      var lastNameCol = header.findIndex(v => v.toLowerCase() === 'last name');
-      var cellPhoneCols = getColumns(header, /(primary|mobile) phone/);
-      var homePhoneCols = getColumns(header, 'home phone');
-      var workPhoneCols = getColumns(header, /(company.*|business|work|assistant.s) phone/);
-      var otherPhoneCols = getColumns(header, 'other phone');
-      var emailCols = getColumns(header, /e.?mail .*address/);
-
-      parsedCSV.forEach(function(contact) {
-        // positions from Outlook contacts schema in the README file of
-        // this project
-        var firstName = contact[firstNameCol];
-        var middleName = contact[middleNameCol];
-        var lastName = contact[lastNameCol];
-
-        if (firstName || lastName) {
-          vcardContact = vCard();
-          vcardContact.firstName = firstName;
-          vcardContact.middleName = middleName;
-          vcardContact.lastName = lastName;
-
-          vcardContact.cellPhone = getEntries(contact, cellPhoneCols);
-          vcardContact.homePhoneCols = getEntries(contact, homePhoneCols);
-          vcardContact.workPhone = getEntries(contact, workPhoneCols);
-          vcardContact.otherPhone = getEntries(contact, otherPhoneCols);
-          vcardContact.email = getEntries(contact, emailCols);
-
-          path = outputDir + '/';
-          // join with space, trim extra space, replace whitespace with '-'
-          path += [firstName, middleName, lastName].join(' ').trim().toLowerCase().replace(/[\W]{1,}/ig, '-');
-          path += '.vcf';
-          vcardContact.saveToFile(path);
-          console.log('File saved in ' + path);
+    console.log('Opened source file ' + file);
+    var combinedFilePath = outputDir + '/_all-contacts.vcf';
+    var stream = fs.createWriteStream(combinedFilePath);
+    stream.once('open', function(fd) {
+      parse(output, function(err, parsedCSV){
+        if (err) {
+          throw 'error parsing file: ' + err;
         }
+        var header = parsedCSV.shift();
+        var firstNameCol = header.findIndex(v => v.toLowerCase() === 'first name');
+        var middleNameCol = header.findIndex(v => v.toLowerCase() === 'middle name');
+        var lastNameCol = header.findIndex(v => v.toLowerCase() === 'last name');
+        var cellPhoneCols = getColumns(header, /(primary|mobile) phone/);
+        var homePhoneCols = getColumns(header, 'home phone');
+        var workPhoneCols = getColumns(header, /(company.*|business|work|assistant.s) phone/);
+        var otherPhoneCols = getColumns(header, 'other phone');
+        var emailCols = getColumns(header, /e.?mail .*address/);
+
+        parsedCSV.forEach(function(contact) {
+          // positions from Outlook contacts schema in the README file of
+          // this project
+          
+          var firstName = contact[firstNameCol];
+          var middleName = contact[middleNameCol];
+          var lastName = contact[lastNameCol];
+
+          if (firstName || lastName) {
+            console.log('Adding contact ' + firstName);
+            vcardContact = vCard();
+            vcardContact.firstName = firstName;
+            vcardContact.middleName = middleName;
+            vcardContact.lastName = lastName;
+
+            vcardContact.cellPhone = getEntries(contact, cellPhoneCols);
+            vcardContact.homePhoneCols = getEntries(contact, homePhoneCols);
+            vcardContact.workPhone = getEntries(contact, workPhoneCols);
+            vcardContact.otherPhone = getEntries(contact, otherPhoneCols);
+            vcardContact.email = getEntries(contact, emailCols);
+
+            path = outputDir + '/';
+            // join with space, trim extra space, replace whitespace with '-'
+            path += [firstName, middleName, lastName].join(' ').trim().toLowerCase().replace(/[\W]{1,}/ig, '-');
+            path += '.vcf';
+            vcardContact.saveToFile(path);
+
+            console.log('\tFile saved in ' + path);
+            stream.write(vcardContact.getFormattedString()  + "\n");
+          }
+        });
+        stream.end();
+        console.log('\nCombined contacts written to file ' + combinedFilePath);
       });
+
     });
   });
 });

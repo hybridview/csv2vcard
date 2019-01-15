@@ -85,3 +85,21 @@ $ node index.js path/to/contacts.csv -o path/to/outputdir
 // 59 Anniversary
 // 60 Notes
 ```
+
+
+##Instructions for bulk import of contacts from Excel spreadsheet
+Useful for situations where your company provides contact lists via an Excel spreadsheet. Unless the author 
+planned for importing via this tool, you will need to perform a few steps before the contacts can be batch 
+imported.
+
+1) Open "outlook_template.csv" file in Excel.
+2) Copy columns one-by-one from source Excel into correct columns in outlook_template.
+3) Save file as "contacts.csv" into csv2vcard folder (unless you specify custom path argument).
+4) Run "node index.js".
+5) File "_all-contacts.vcf" with ALL contacts combined into a single vcard file will be created in the output folder. Also, each contact will be saved separately to the output folder.
+
+
+#Import into iPhone using ICloud.
+
+6) In ICloud contacts page, click the GEAR icon and choose "Import VCARD".
+7) Select the new "contacts.vcf" file. All contacts should now appear!
