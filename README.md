@@ -102,4 +102,9 @@ imported.
 #Import into iPhone using ICloud.
 
 6) In ICloud contacts page, click the GEAR icon and choose "Import VCARD".
-7) Select the new "contacts.vcf" file. All contacts should now appear!
+7) Select the new "contacts.vcf" file. All contacts should now appear!\
+
+#De-Dupe Module
+
+Very ugly de-dupe script to fix my (a.moore) address book after I tried merging contacts multiple times. I had 
+multiple duplicates, but could not clear everything because I had some older contacts I wanted to keep.
